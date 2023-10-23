@@ -64,8 +64,10 @@ def make_dataloader(cfg):
     train_set = ImageDataset(dataset.train, train_transforms)
     train_set_normal = ImageDataset(dataset.train, val_transforms)
     num_classes = dataset.num_train_pids
+    
     cam_num = dataset.num_train_cams
     view_num = dataset.num_train_vids
+
 
     if 'triplet' in cfg.DATALOADER.SAMPLER:
         if cfg.MODEL.DIST_TRAIN:
@@ -105,4 +107,5 @@ def make_dataloader(cfg):
         train_set_normal, batch_size=cfg.TEST.IMS_PER_BATCH, shuffle=False, num_workers=num_workers,
         collate_fn=val_collate_fn
     )
+    
     return train_loader, train_loader_normal, val_loader, len(dataset.query), num_classes, cam_num, view_num

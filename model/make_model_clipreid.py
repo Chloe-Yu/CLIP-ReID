@@ -164,6 +164,9 @@ class build_transformer(nn.Module):
         for i in param_dict:
             self.state_dict()[i].copy_(param_dict[i])
         print('Loading pretrained model for finetuning from {}'.format(model_path))
+    
+    def get_linear_num(self):
+        return self.in_planes+self.in_planes_proj 
 
 
 def make_model(cfg, num_class, camera_num, view_num):

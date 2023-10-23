@@ -1,7 +1,10 @@
 import torch
 import torchvision.transforms as T
 from torch.utils.data import DataLoader
+from torch.utils.data import Dataset
+from PIL import Image
 
+import os
 from .bases import ImageDataset
 from timm.data.random_erasing import RandomErasing
 from .sampler import RandomIdentitySampler
@@ -13,6 +16,7 @@ import torch.distributed as dist
 from .occ_duke import OCC_DukeMTMCreID
 from .vehicleid import VehicleID
 from .veri import VeRi
+from .animal import Animal
 
 __factory = {
     'market1501': Market1501,
@@ -20,7 +24,8 @@ __factory = {
     'msmt17': MSMT17,
     'occ_duke': OCC_DukeMTMCreID,
     'veri': VeRi,
-    'VehicleID': VehicleID
+    'VehicleID': VehicleID,
+    'animals':Animal
 }
 
 def train_collate_fn(batch):
@@ -58,10 +63,14 @@ def make_dataloader(cfg):
     ])
 
     num_workers = cfg.DATALOADER.NUM_WORKERS
-
-    dataset = __factory[cfg.DATASETS.NAMES](root=cfg.DATASETS.ROOT_DIR)
+    if cfg.DATASETS.NAMES == 'animals':
+        dataset = __factory[cfg.DATASETS.NAMES](root=cfg.DATASETS.ROOT_DIR, species = cfg.DATASETS.SPECIES )
+    else:
+        dataset = __factory[cfg.DATASETS.NAMES](root=cfg.DATASETS.ROOT_DIR)
+    
     
     train_set = ImageDataset(dataset.train, train_transforms)
+    print("len of train",len(train_set))
     train_set_normal = ImageDataset(dataset.train, val_transforms)
     num_classes = dataset.num_train_pids
     cam_num = dataset.num_train_cams
@@ -106,3 +115,135 @@ def make_dataloader(cfg):
         collate_fn=train_collate_fn
     )
     return train_loader_stage2, train_loader_stage1, val_loader, len(dataset.query), num_classes, cam_num, view_num
+
+
+class dataset_test(Dataset):
+    def __init__(self, root, label,unlabeled, transform=None, signal=' '):
+        self._root = root
+        self._label = label
+        self._transform = transform
+        self._unlabeled = unlabeled
+        self._list_images(self._root, self._label, signal)
+
+    def _list_images(self, root, image_names, signal):
+        self.synsets = []
+        self.synsets.append(root)
+        self.items = []
+
+        c = 0
+        for line in image_names:
+            cls = line.rstrip('\n').split(signal)
+            image_name = cls.pop(0)
+            
+            if os.path.isfile(os.path.join(root, image_name)):
+                if self._unlabeled:
+                    self.items.append((os.path.join(root, image_name), image_name))
+                else:
+                    self.items.append((os.path.join(root, image_name), float(cls[0]), image_name))
+            else:
+                print(os.path.join(root, image_name))
+            c += 1
+        print('the total image is ', c)
+
+    def __len__(self):
+        return len(self.items)
+
+    def __getitem__(self, index):
+        # return img, img_name, (label)
+        oriimg = Image.open(self.items[index][0])
+        oriimg = oriimg.convert('RGB')
+        if self._transform is not None:
+            img = self._transform(oriimg)
+             
+        if self._unlabeled:
+            return img, self.items[index][1]
+
+        return img, self.items[index][1], self.items[index][2]
+
+
+
+
+def load_gallery_probe_data(root, gallery_paths, probe_paths,
+                            batch_size=32, num_workers=0,data_transforms=None):
+    
+    def get_label(label_path):
+        f = open(label_path)
+        lines = f.readlines()
+        return lines
+    
+    
+    gallery_list = []
+    for i in gallery_paths:
+        tmp = get_label(i)
+        gallery_list = gallery_list + tmp
+
+    probe_list = []
+    for i in probe_paths:
+        tmp = get_label(i)
+        probe_list = probe_list + tmp
+        
+
+    # changed this to load for labeled data
+    gallery_dataset = dataset_test(root, gallery_list, unlabeled=False, 
+                                   transform=data_transforms)
+    probe_dataset = dataset_test(root, probe_list, unlabeled=False,
+                                 transform=data_transforms)
+
+    gallery_iter = DataLoader(
+        gallery_dataset,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=num_workers
+    )
+    probe_iter = DataLoader(
+        probe_dataset,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=num_workers
+    )
+
+    return gallery_iter, probe_iter
+
+
+def make_test_dataloader(cfg):
+    
+    data_transforms = T.Compose([
+        T.Resize(cfg.INPUT.SIZE_TEST),
+        T.ToTensor(),
+        T.Normalize(mean=cfg.INPUT.PIXEL_MEAN, std=cfg.INPUT.PIXEL_STD)
+    ])
+    num_workers = cfg.DATALOADER.NUM_WORKERS
+    gallery_path_dic = {'tiger':'./datalist/mytest.txt',
+                    's_yak':'./datalist/yak_gallery_simple.txt',
+                    'h_yak':'./datalist/yak_gallery_hard.txt',
+                    'yak':'./datalist/yak_gallery_hard.txt',
+                    'elephant':'./datalist/ele_new_test_gallery.txt',
+                    'debug':'./datalist/debug_ele_train.txt'}
+    probe_path_dic = {'tiger':'./datalist/mytest.txt',
+                        's_yak':'./datalist/yak_probe_simple.txt',
+                        'h_yak':'./datalist/yak_probe_hard.txt',
+                        'yak':'./datalist/yak_probe_hard.txt',
+                        'elephant':'./datalist/ele_new_test_probe.txt',
+                        'debug':'./datalist/debug_ele_train.txt'}
+    
+
+
+    dataset_type = cfg.DATASETS.SPECIES
+    gallery_paths = [gallery_path_dic[dataset_type], ]
+    probe_paths = [probe_path_dic[dataset_type], ]
+    root = cfg.DATASETS.TEST_ROOT_DIR
+        
+    gallery_iter, probe_iter = load_gallery_probe_data(
+        root=root,
+        gallery_paths=gallery_paths,
+        probe_paths=probe_paths,
+        batch_size=cfg.TEST.IMS_PER_BATCH,
+        num_workers=num_workers,
+        data_transforms=data_transforms
+    )
+    dataloaders = {'gallery':gallery_iter,'query':probe_iter}
+    
+    dict_nclasses = {'yak':121,'tiger':107,'elephant':337,'all':565}
+    num_classes = dict_nclasses[dataset_type]
+    
+    return  dataloaders,num_classes

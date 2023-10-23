@@ -3,7 +3,8 @@ from config import cfg
 import argparse
 import logging
 import torch
-from metric import evaluate_CMC
+from metric import evaluate_rerank
+from re_ranking import re_ranking
 from datasets.make_dataloader_clipreid import make_test_dataloader
 from model.make_model_clipreid import make_model
 from processor.processor_clipreid_stage2 import do_inference
@@ -61,7 +62,7 @@ if __name__ == "__main__":
     if output_dir and not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    logger = setup_logger("transreid", output_dir, if_train=False)
+    logger = setup_logger("transreid", output_dir, if_train=False, rerank=True)
     logger.info(args)
 
     if args.config_file != "":
@@ -99,11 +100,26 @@ if __name__ == "__main__":
         gallery_feature,gallery_label,gallery_names = extract_feature(model,dataloaders['gallery'],linear_num)
         query_feature, query_label,query_names = extract_feature(model,dataloaders['query'],linear_num)
         
+    q_g_dist = np.dot(query_feature, np.transpose(gallery_feature))
+    q_q_dist = np.dot(query_feature, np.transpose(query_feature))
+    g_g_dist = np.dot(gallery_feature, np.transpose(gallery_feature))
+    re_rank = re_ranking(q_g_dist, q_q_dist, g_g_dist)
+    
     remove_closest = True
     if cfg.DATASETS.SPECIES== 'yak' :
         remove_closest = False
     
-    CMC,ap,q_g_dist = evaluate_CMC(query_feature, query_label, gallery_feature, gallery_label,remove_closest,'cos',True)
+    CMC = torch.IntTensor(len(gallery_label)).zero_()
+    ap = 0.0
+    for i in range(len(query_label)):
+        ap_tmp, CMC_tmp = evaluate_rerank(re_rank[i,:],query_label[i],gallery_label,remove_closest)
+        if CMC_tmp[0]==-1:
+            continue
+        CMC = CMC + CMC_tmp
+        ap += ap_tmp
+        
+    CMC = CMC.float()
+    CMC = CMC/len(query_label)
     
      
     if cfg.DATASETS.SPECIES == 'tiger':
@@ -113,7 +129,7 @@ if __name__ == "__main__":
             tmp = {}
             image_name = query_names[i]
 
-            index =np.argsort(q_g_dist[i, :])
+            index =np.argsort(re_rank[i, :])
 
             tmp['query_id'] = int(image_name.rstrip('.jpg'))
             p = 0

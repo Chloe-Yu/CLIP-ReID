@@ -89,7 +89,10 @@ _C.DATASETS = CN()
 _C.DATASETS.NAMES = ('market1501')
 # Root directory where datasets should be used (and downloaded if not found)
 _C.DATASETS.ROOT_DIR = ('../data')
-
+#Test Root directory where datasets should be used (and downloaded if not found)
+_C.DATASETS.TEST_ROOT_DIR = ('../data')
+# animal species of the dataset
+_C.DATASETS.SPECIES = ('tiger')
 
 # -----------------------------------------------------------------------------
 # DataLoader
