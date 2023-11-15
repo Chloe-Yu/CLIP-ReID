@@ -93,6 +93,7 @@ _C.DATASETS.ROOT_DIR = ('../data')
 _C.DATASETS.TEST_ROOT_DIR = ('../data')
 # animal species of the dataset
 _C.DATASETS.SPECIES = ('tiger')
+_C.DATASETS.DATA_DIR = ('Animal-Seg-V3')
 
 # -----------------------------------------------------------------------------
 # DataLoader

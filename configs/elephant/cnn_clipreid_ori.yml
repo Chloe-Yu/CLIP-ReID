@@ -73,7 +73,7 @@ DATASETS:
   DATA_DIR: ('Animal-2')
 OUTPUT_DIR: './output/elephant/cnn_ori'
 
-# CUDA_VISIBLE_DEVICES=0 python train_clipreid.py --config_file configs/elephant/cnn_clipreid.yml
+# CUDA_VISIBLE_DEVICES=0 python train_clipreid.py --config_file configs/elephant/cnn_clipreid_ori.yml
 # CUDA_VISIBLE_DEVICES=0 python test_clipreid.py --config_file configs/elephant/cnn_clipreid.yml TEST.WEIGHT './output/elephant/cnn/RN50_2.pth'
 
 

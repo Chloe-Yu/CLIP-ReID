@@ -76,6 +76,7 @@ def make_dataloader(cfg):
     cam_num = dataset.num_train_cams
     view_num = dataset.num_train_vids
 
+
     if 'triplet' in cfg.DATALOADER.SAMPLER:
         if cfg.MODEL.DIST_TRAIN:
             print('DIST_TRAIN START')

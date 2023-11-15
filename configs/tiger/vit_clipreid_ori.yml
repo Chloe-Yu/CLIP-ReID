@@ -79,3 +79,6 @@ OUTPUT_DIR: './output/tiger/vit_ori'
 # CUDA_VISIBLE_DEVICES=0 python train_clipreid.py --config_file configs/tiger/vit_clipreid.yml
 # CUDA_VISIBLE_DEVICES=0 python test_clipreid.py --config_file configs/tiger/vit_clipreid.yml TEST.WEIGHT './output/tiger/vit/ViT-B-16_1.pth'
 # CUDA_VISIBLE_DEVICES=0 python test_rerank.py --config_file configs/tiger/vit_clipreid.yml TEST.WEIGHT './output/tiger/vit/ViT-B-16_1.pth'
+
+
+# CUDA_VISIBLE_DEVICES=0 python test_rerank_clipreid.py --config_file configs/tiger/vit_clipreid.yml TEST.WEIGHT './output/tiger/vit_ori/ViT-B-16_2.pth'
