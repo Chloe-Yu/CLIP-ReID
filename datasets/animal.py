@@ -31,11 +31,10 @@ class Animal(object):
     # identities: 1501 (+1 for background)
     # images: 12936 (train) + 3368 (query) + 15913 (gallery)
     """
-    dataset_dir = 'Animal-Seg-V3'
 
-    def __init__(self, root='',species='tiger', verbose=True, pid_begin = 0, **kwargs):
+    def __init__(self, root='',species='tiger', verbose=True, pid_begin = 0,dataset_dir = 'Animal-Seg-V3',**kwargs):
         super(Animal, self).__init__()
-        self.dataset_dir = osp.join(root, self.dataset_dir)
+        self.dataset_dir = osp.join(root, dataset_dir)
         self.train_dir = self.dataset_dir 
         self.query_dir = self.dataset_dir
         self.gallery_dir = self.train_dir

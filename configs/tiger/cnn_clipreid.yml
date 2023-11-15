@@ -70,6 +70,7 @@ DATASETS:
   ROOT_DIR: ('../data/')
   TEST_ROOT_DIR: ('../data/tiger/tiger_test_isnet_seg')
   SPECIES: ('tiger')
+  DATA_DIR: ('Animal-Seg-V3')
 OUTPUT_DIR: './output/tiger/cnn'
   
 
@@ -78,12 +79,10 @@ OUTPUT_DIR: './output/tiger/cnn'
 # CUDA_VISIBLE_DEVICES=0 python test_rerank_clipreid.py --config_file configs/tiger/cnn_clipreid.yml TEST.WEIGHT './output/tiger/cnn/RN50_2.pth'
 
 # data_dirs = {
-#         'tiger_ori':'./data/tiger/test',
+#         'tiger_ori':'./data/tiger/test_original',
 #         'tiger_seg':'./data/tiger/tiger_test_isnet_seg',
 #         'elephant_seg':'./data/ele_test_v3_seg',
-#         'elephant_ori':'./data/elephant_test',
-#         'h_yak_seg':'./data/yak_test_masked',
+#         'elephant_ori':'./data/elephant',
 #         'yak_seg':'./data/yak_test_seg_isnet_pp',
-#         'h_yak_ori':'./data/yak_test',
-#         'yak_ori':'./data/yak_test'
+#         'yak_ori':'./data/val'
 #     }

@@ -64,7 +64,7 @@ def make_dataloader(cfg):
 
     num_workers = cfg.DATALOADER.NUM_WORKERS
     if cfg.DATASETS.NAMES == 'animals':
-        dataset = __factory[cfg.DATASETS.NAMES](root=cfg.DATASETS.ROOT_DIR, species = cfg.DATASETS.SPECIES )
+        dataset = __factory[cfg.DATASETS.NAMES](root=cfg.DATASETS.ROOT_DIR, species = cfg.DATASETS.SPECIES, data_dir = cfg.DATASETS.DATA_DIR )
     else:
         dataset = __factory[cfg.DATASETS.NAMES](root=cfg.DATASETS.ROOT_DIR)
     
