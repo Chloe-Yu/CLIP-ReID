@@ -72,6 +72,7 @@ DATASETS:
   ROOT_DIR: ('../data/')
   TEST_ROOT_DIR: ('../data/tiger/tiger_test_isnet_seg')
   SPECIES: ('tiger')
+  DATA_DIR: ('Animal-Seg-V3')
 OUTPUT_DIR: './output/tiger/vit'
 
 

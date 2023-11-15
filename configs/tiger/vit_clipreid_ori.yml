@@ -36,7 +36,7 @@ SOLVER:
     WEIGHT_DECAY:  1e-4
     WEIGHT_DECAY_BIAS: 1e-4
     MAX_EPOCHS: 120
-    CHECKPOINT_PERIOD:  120
+    CHECKPOINT_PERIOD: 120
     LOG_PERIOD: 50
     WARMUP_EPOCHS: 5
   
@@ -67,14 +67,15 @@ TEST:
   NECK_FEAT: 'before'
   FEAT_NORM: 'yes'
 
-#change ROOT_DIR and TEST_ROOT_DIR
 DATASETS:
   NAMES: ('animals')
   ROOT_DIR: ('../data/')
-  TEST_ROOT_DIR: ('../data/yak_test_seg_isnet_pp')
-  SPECIES: ('yak')
-  DATA_DIR: ('Animal-Seg-V3')
-OUTPUT_DIR: './output/yak/vit'
+  TEST_ROOT_DIR: ('../data/tiger/test_original')
+  SPECIES: ('tiger')
+  DATA_DIR: ('Animal-2')
+OUTPUT_DIR: './output/tiger/vit_ori'
 
-# CUDA_VISIBLE_DEVICES=0 python train_clipreid.py --config_file configs/yak/vit_clipreid.yml
-# CUDA_VISIBLE_DEVICES=0 python test_clipreid.py --config_file configs/yak/vit_clipreid.yml TEST.WEIGHT './output/yak/vit/ViT-B-16_1.pt'
+
+# CUDA_VISIBLE_DEVICES=0 python train_clipreid.py --config_file configs/tiger/vit_clipreid.yml
+# CUDA_VISIBLE_DEVICES=0 python test_clipreid.py --config_file configs/tiger/vit_clipreid.yml TEST.WEIGHT './output/tiger/vit/ViT-B-16_1.pth'
+# CUDA_VISIBLE_DEVICES=0 python test_rerank.py --config_file configs/tiger/vit_clipreid.yml TEST.WEIGHT './output/tiger/vit/ViT-B-16_1.pth'
